@@ -1,5 +1,6 @@
 #include <iostream>
 #include "tools.h"
+#include <math.h>
 
 using Eigen::VectorXd;
 using Eigen::MatrixXd;
@@ -39,6 +40,32 @@ VectorXd Tools::CalculateRMSE(const vector<VectorXd> &estimations,
 
 	//return the result
 	return rmse;
+}
+
+VectorXd Tools::CalculatehxPrime(const VectorXd& x_state) {
+
+	VectorXd hx(3);
+
+	//recover state parameters
+	float px = x_state(0);
+	float py = x_state(1);
+	float vx = x_state(2);
+	float vy = x_state(3);
+
+	//check division by zero
+	if (px ==0 || py == 0)
+	    hx << 0, 
+	          0,
+		  0;
+
+	float pxy_sqrt = sqrt(px*px + py*py);
+	
+	hx(0) = pxy_sqrt;
+	hx(1) = atan(py/px);
+	hx(2) = (px*vx+py*vy)/pxy_sqrt;
+
+	return hx;
+
 }
 
 MatrixXd Tools::CalculateJacobian(const VectorXd& x_state) {
