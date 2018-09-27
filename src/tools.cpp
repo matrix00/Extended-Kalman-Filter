@@ -50,8 +50,6 @@ MatrixXd Tools::CalculateJacobian(const VectorXd& x_state) {
 	float vx = x_state(2);
 	float vy = x_state(3);
 
-	//TODO: YOUR CODE HERE 
-
 	//check division by zero
 	if (px ==0 || py == 0)
 	    Hj << 0, 0, 0,
