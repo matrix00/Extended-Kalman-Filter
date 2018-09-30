@@ -40,6 +40,7 @@ void KalmanFilter::Update(const VectorXd &z) {
   cout << "Laser update H z_pred "<< H_ << z_pred<< endl;
 	VectorXd y = z - z_pred;
   cout << "Laser update y "<< y << endl;
+
 	MatrixXd Ht = H_.transpose();
 	MatrixXd S = H_ * P_ * Ht + R_;
 	MatrixXd Si = S.inverse();
@@ -70,12 +71,20 @@ void KalmanFilter::UpdateEKF(const VectorXd &z) {
 
 	VectorXd h_x = tools.CalculatehxPrime(x_) ;
 
-  cout << "Radar update hx_ = " << h_x << endl;
-	MatrixXd Hj = tools.CalculateJacobian(x_);
-
-  cout << "Radar update Hj = " << Hj << endl;
+  cout << "Radar update hx_ = " << h_x <<  " z " << z<<endl;
 	VectorXd y = z - h_x ;
   cout << "Radar update y = " << y  << endl;
+
+	//normalize phi
+	 while (y[1] > M_PI)
+		y[1] -= 2*M_PI;
+	while (y[1] < -1*M_PI)
+		y[1] += 2*M_PI;
+	 	
+  cout << "Laser update normalized y "<< y << endl;
+	MatrixXd Hj = tools.CalculateJacobian(x_);
+  cout << "Radar update Hj = " << Hj << endl;
+
 	MatrixXd Ht = Hj.transpose();
 	MatrixXd S = Hj * P_ * Ht + R_;
 	MatrixXd Si = S.inverse();
