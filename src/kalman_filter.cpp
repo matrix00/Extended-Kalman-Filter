@@ -35,11 +35,9 @@ void KalmanFilter::Predict() {
 
 void KalmanFilter::Update(const VectorXd &z) {
 
-  cout << "Laser update start "<< endl;
 	VectorXd z_pred = H_ * x_;
-  cout << "Laser update H z_pred "<< H_ << z_pred<< endl;
+
 	VectorXd y = z - z_pred;
-  cout << "Laser update y "<< y << endl;
 
 	MatrixXd Ht = H_.transpose();
 	MatrixXd S = H_ * P_ * Ht + R_;
@@ -52,12 +50,6 @@ void KalmanFilter::Update(const VectorXd &z) {
 	long x_size = x_.size();
 	MatrixXd I = MatrixXd::Identity(x_size, x_size);
 	P_ = (I - K * H_) * P_;
-
- // print the output
-  cout << "Laser update KF x_ = " << x_ << endl;
-  cout << "Laser Update KF P_ = " << P_ << endl;
-
-
 }
 
 void KalmanFilter::UpdateEKF(const VectorXd &z) {
@@ -65,32 +57,29 @@ void KalmanFilter::UpdateEKF(const VectorXd &z) {
     * update the state by using Extended Kalman Filter equations
   */
 
-  cout << "Radar update start "<< endl;
 	
   	Tools tools;
 
 	VectorXd h_x = tools.CalculatehxPrime(x_) ;
 
-  cout << "Radar update hx_ = " << h_x <<  " z " << z<<endl;
+
 	VectorXd y = z - h_x ;
-  cout << "Radar update y = " << y  << endl;
 
 	//normalize phi
 	 while (y[1] > M_PI)
 		y[1] -= 2*M_PI;
+
 	while (y[1] < -1*M_PI)
 		y[1] += 2*M_PI;
 	 	
-  cout << "Laser update normalized y "<< y << endl;
+
 	MatrixXd Hj = tools.CalculateJacobian(x_);
-  cout << "Radar update Hj = " << Hj << endl;
 
 	MatrixXd Ht = Hj.transpose();
 	MatrixXd S = Hj * P_ * Ht + R_;
 	MatrixXd Si = S.inverse();
 	MatrixXd PHt = P_ * Ht;
 	MatrixXd K = PHt * Si;
-  cout << "Radar update K = " << K << endl;
 
 	//new estimate
 	x_ = x_ + (K * y);
@@ -98,7 +87,4 @@ void KalmanFilter::UpdateEKF(const VectorXd &z) {
 	MatrixXd I = MatrixXd::Identity(x_size, x_size);
 	P_ = (I - K * Hj) * P_;
  
-// print the output
-  cout << "Radar update KF x_ = " << x_ << endl;
-  cout << "Radar Update KF P_ = " << P_ << endl;
 }

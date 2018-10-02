@@ -14,41 +14,45 @@ Tools::~Tools() {}
 
 VectorXd Tools::CalculateRMSE(const vector<VectorXd> &estimations,
                               const vector<VectorXd> &ground_truth) {
-
 	VectorXd rmse(4);
 	rmse << 0,0,0,0;
 
 	// check the validity of the following inputs:
 	//  * the estimation vector size should not be zero
 	//  * the estimation vector size should equal ground truth vector size
-	// ... your code here
-	
-	if (estimations.size() == 0 || (estimations.size() != ground_truth.size()))
-	    return rmse;
+	if(estimations.size() != ground_truth.size()
+			|| estimations.size() == 0){
+		cout << "Invalid estimation or ground_truth data" << endl;
+		return rmse;
+	}
 
-    
 	//accumulate squared residuals
 	for(unsigned int i=0; i < estimations.size(); ++i){
-        	VectorXd error = (estimations[i] - ground_truth[i]);
-        	VectorXd errorsq  = error.array()*error.array();
-        	rmse = rmse + errorsq;
+
+		VectorXd residual = estimations[i] - ground_truth[i];
+
+		//coefficient-wise multiplication
+		residual = residual.array()*residual.array();
+		rmse += residual;
 	}
 
 	//calculate the mean
 	rmse = rmse/estimations.size();
 
 	//calculate the squared root
-	rmse = (rmse.array()).sqrt(); 
+	rmse = rmse.array().sqrt();
 
+	cout << "rmse********************* " << rmse << endl;
 	//return the result
 	return rmse;
 }
 
+
 VectorXd Tools::CalculatehxPrime(const VectorXd& x_state) {
 
 	VectorXd hx(3);
+	hx << 0, 0, 0; 
 
-        cout << " z " << x_state;
 	
 	//recover state parameters
 	float px = x_state(0);
@@ -56,60 +60,27 @@ VectorXd Tools::CalculatehxPrime(const VectorXd& x_state) {
 	float vx = x_state(2);
 	float vy = x_state(3);
 
-	cout << " px py vx vy " << px << py << vx << vy << endl;
-	//check division by zero
-	if (px ==0 || py == 0)
-	    hx << 0, 
-	          0,
-		  0;
 
-	float pxy_sqrt = sqrt(px*px + py*py);
+
+	float c1 = px*px+py*py;
+	float c2 = sqrt(c1);
 	
-	hx(0) = pxy_sqrt;
-	hx(1) = atan(py/px);
-	hx(2) = (px*vx+py*vy)/pxy_sqrt;
+	//check division by zero
+	if (fabs(c1) < 0.0001 ){
+		cout << "CalculatehxPrime() - Error - Division by Zero" << endl;
+		return hx;
+	}
+	
+	hx(0) =c2;
+	hx(1) = atan2(py,px);
+	hx(2) = (px*vx+py*vy)/c2;
 
-	cout << " hx " << hx << endl;
 	return hx;
 
 }
 
 MatrixXd Tools::CalculateJacobian(const VectorXd& x_state) {
 	
-/*	MatrixXd Hj(3,4);
-	//recover state parameters
-	float px = x_state(0);
-	float py = x_state(1);
-	float vx = x_state(2);
-	float vy = x_state(3);
-
-	//check division by zero
-	if (px ==0 || py == 0 )
-	    Hj << 0, 0, 0,
-	          0, 0, 0,
-	          0, 0, 0;
-	    
-	
-	//compute the Jacobian matrix
-	float pxy_sqrt = sqrt(px*px + py*py);
-	float pxy = pxy_sqrt * pxy_sqrt;
-	float pxy_32 = pxy * pxy_sqrt;
-	
-	Hj(0,0) = px/pxy_sqrt;
-	Hj(0,1) = py/pxy_sqrt;
-
-	Hj(1,0) = -py/pxy;
-	Hj(1,1) = px/pxy;
-    
-	Hj(2,0) = py*(vx*py-vy*px)/pxy_32;
-	Hj(2,1) = px*(vy*px-vx*py)/pxy_32;
-    
-    
-	Hj(2,2) = px/pxy_sqrt;
-	Hj(2,3) = py/pxy_sqrt;
-    
-    
-	return Hj;*/
 
 	MatrixXd Hj(3,4);
 	//recover state parameters
